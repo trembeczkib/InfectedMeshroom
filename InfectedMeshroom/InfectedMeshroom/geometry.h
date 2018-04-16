@@ -22,14 +22,14 @@ class point {
 
 class segment {
 	private: 
-		point& initial_point, terminal_point;
+		int initial_point, terminal_point;
 	public:
 		segment();
-		segment(point& initial, point& terminal);
-		void set_terminal(point& new_terminal);
-		void set_initial(point& new_initial);
-		point& get_inital();
-		point& get_terminal();
+		segment(int initial, int terminal);
+		void set_terminal(int new_terminal);
+		void set_initial(int new_initial);
+		int get_inital();
+		int get_terminal();
 		friend std::ostream& operator << (std::ostream& os, const segment& p);
 };
 
@@ -54,15 +54,17 @@ class octree {
 	private:
 		std::vector<int> points; //points belonging to this node
 		octree *children[8]; //array of children
-		const int min_space; //minimal size of enclosed region (stop splitting the space)
-		const int min_size; //minimal number of points on node (stop splitting the space)
+		double min_range; //minimal size of enclosed region (stop splitting the space)
+		int min_size; //minimal number of points on node (stop splitting the space)
 		point origo;
+		double range;
 	public:
 		octree();
-		octree(const point o, std::vector<int> points);
+		octree(const point o, std::vector<int> p, double m_range , double r, int m_size, std::vector<point>& p_values);
 		void insert_point(const int p);
 		int getContainerChild(const point p);
 		bool isLeaf();
 
 };
+
 #endif
