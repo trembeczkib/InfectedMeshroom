@@ -2,6 +2,7 @@
 #define GEOMETRY_H
 
 #include <iostream>
+#include <vector>
 
 class point {
 	private:
@@ -13,9 +14,9 @@ class point {
 		void set_x(double value);
 		void set_y(double value);
 		void set_z(double value);
-		double get_x();
-		double get_y();
-		double get_z();
+		double get_x() const;
+		double get_y() const;
+		double get_z() const;
 		friend std::ostream& operator << (std::ostream& os, const point& p);
 };
 
@@ -50,6 +51,18 @@ class triangle {
 };
 
 class octree {
+	private:
+		std::vector<int> points; //points belonging to this node
+		octree *children[8]; //array of children
+		const int min_space; //minimal size of enclosed region (stop splitting the space)
+		const int min_size; //minimal number of points on node (stop splitting the space)
+		point origo;
+	public:
+		octree();
+		octree(const point o, std::vector<int> points);
+		void insert_point(const int p);
+		int getContainerChild(const point p);
+		bool isLeaf();
 
 };
 #endif
