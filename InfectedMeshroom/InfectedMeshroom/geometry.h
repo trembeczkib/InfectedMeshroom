@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 class point {
 	private:
@@ -31,6 +32,7 @@ class segment {
 		int get_initial() const;
 		int get_terminal() const;
 		double get_length(std::vector<point> &points) const;
+		double get_angle_2d(std::vector<point> &points) const;
 		friend std::ostream& operator << (std::ostream& os, const segment& p);
 //		friend bool length_sort(const segment s1, const segment s2, std::vector<point> points);
 };

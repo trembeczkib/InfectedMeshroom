@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <vector>
 #include "geometry.h"
@@ -89,6 +90,12 @@ double segment::get_length(std::vector<point> &points) const{
 	point i = points[get_initial()];
 	return sqrt(pow(t.get_x() - i.get_x(), 2) + pow(t.get_y() - i.get_y(), 2) + pow(t.get_z() - i.get_z(), 2));
 }
+
+double segment::get_angle_2d(std::vector<point> &points) const {
+	
+	return atan2((points[terminal_point].get_y() - points[initial_point].get_y()) , (points[terminal_point].get_x() - points[initial_point].get_x()));
+}
+
 ///////////////////
 
 

@@ -33,12 +33,13 @@ class mesh {
 		void set_triangle(std::vector<triangle> triangles);
 		front get_front();
 		octree get_octree();
-		std::vector<triangle>  get_triangles();
-		std::vector<point> get_points();
+		std::vector<triangle>&  get_triangles();
+		std::vector<point>& get_points();
 		void sortFrontByLength();
 		void advanceFront(double segment_length, double search_radius);
 		bool length_sort(segment s1, segment s2);
 		void initilaizeOctree(double m_r, double r, double m_s);
+		void splitSegmentsInFront(double length, double min);
 };
 
 

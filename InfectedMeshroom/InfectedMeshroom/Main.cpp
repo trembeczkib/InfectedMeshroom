@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -28,12 +29,14 @@ int main() {
 	s.push_back(segment(1, 2));
 	s.push_back(segment(2, 0));
 
+
 	front f = front(s);
 	mesh Mesh = mesh(Points, f, 16, 256, 2);
 	
 //	Mesh.initilaizeOctree(16, 256, 2);
-	std::cout << Mesh.get_octree().get_size();
+//	std::cout << atan2(-10, 10) * 180 / M_PI;
+	Mesh.splitSegmentsInFront(10, 1.5);
 
-	getchar();
+	std::getchar();
 	return 0;
 }

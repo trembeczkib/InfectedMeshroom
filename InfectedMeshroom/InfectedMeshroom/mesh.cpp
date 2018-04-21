@@ -47,11 +47,11 @@ front mesh::get_front() {
 	return f;
 }
 
-std::vector<triangle>  mesh::get_triangles() {
+std::vector<triangle>&  mesh::get_triangles() {
 	return t;
 }
 
-std::vector<point> mesh::get_points() {
+std::vector<point>& mesh::get_points() {
 	return p;
 }
 
@@ -81,6 +81,40 @@ void mesh::advanceFront(double segment_length, double search_radius) {
 		removeSegment;
 	*/	
 	}
-	
-}
+}	
+
+	void mesh::splitSegmentsInFront(double length, double min) {
+		std::vector<segment> new_front;
+		const std::vector<segment> f_copy = f.get_edges();
+		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
+
+			if (it->get_length(p) > (length * min)) {
+				double modulus = fmod(it->get_length(p),length);
+				double egeszresz = (it->get_length(p) - modulus) / length;
+				double actual_length = length + (modulus / egeszresz);
+				point new_terminal;
+				int new_terminal_pos;
+				point new_initial;
+				int new_initial_pos = it->get_initial();
+				double x = p[it->get_initial()].get_x();
+				double y = p[it->get_initial()].get_y();
+				for (int i = 1; i < egeszresz; i++) {
+					 x = x + cos(it->get_angle_2d(p)) * actual_length;
+					 y = y + sin(it->get_angle_2d(p)) * actual_length;
+					new_terminal = point(x,y,3);
+					p.push_back(new_terminal);
+					new_terminal_pos = p.size();
+					new_front.push_back(segment(new_initial_pos,new_terminal_pos));
+					new_initial = new_terminal;
+					new_initial_pos = new_terminal_pos;
+				}
+				new_front.push_back(segment(new_initial_pos, it->get_terminal()));
+			}
+			else new_front.push_back(*it);
+		}
+
+		f = new_front;
+	}
+
+
 
