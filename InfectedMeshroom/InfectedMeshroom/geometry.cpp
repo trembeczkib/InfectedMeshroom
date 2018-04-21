@@ -104,25 +104,10 @@ double segment::get_length(std::vector<point> &points) const{
 		max_size = 1;
 		range = 0;
 		origo = point();
-		for (int i = 0; i < 8; i++) {
-			children[i] = NULL;
-		}
 	}
 	
-	/*
-	octree::~octree() {
-		for (int i = 0; i < 8; ++i) {
-			if (children[i] != NULL);
-			delete children[i];
-		}
-	}
-	*/
-	octree::~octree() {
-		for (int i = 0; i < 8; ++i) {
-			if (children[i] != NULL);
-			delete children[i];
-		}
-	}
+	
+
 
 	octree::octree(const octree &other) {
 		points = other.points;
@@ -130,11 +115,9 @@ double segment::get_length(std::vector<point> &points) const{
 		max_size = other.max_size;
 		origo = other.origo;
 		range = other.range;
+
 		for (int i = 0; i < 8; i++) {
-			children[i];
-		}
-		for (int i = 0; i < 8; i++) {
-			*children[i] = *other.children[i];
+			children[i] = other.children[i];
 		}
 	}
 
@@ -144,11 +127,7 @@ double segment::get_length(std::vector<point> &points) const{
 		range = r;
 		max_size = m_size;
 		origo = o;
-		if (p.size() == 0) {
-			for (int i = 0; i < 8; i++) {
-				children[i] = NULL;
-			}
-		}
+		children;
 
 		if (min_range <= range) {
 			if (max_size < p.size()) {
@@ -196,66 +175,65 @@ double segment::get_length(std::vector<point> &points) const{
 					point o0 = point(o.get_x() - range / 2, o.get_y() - range / 2, o.get_z() - range / 2);
 					children[0] = new octree(o0, oct0, min_range, range / 2, max_size, p_values);
 				}
-				else children[0] = NULL;
+			
 				//oct1
 				if (oct1.size() != 0) {
 					point o1 = point(o.get_x() - range / 2, o.get_y() - range / 2, o.get_z() + range / 2);
 					children[1] = new octree(o1, oct1, min_range, range / 2, max_size, p_values);
 				}
-				else children[1] = NULL;
+				
 
 				//oct2
 				if (oct2.size() != 0) {
 					point o2 = point(o.get_x() - range / 2, o.get_y() + range / 2, o.get_z() - range / 2);
 					children[2] = new octree(o2, oct2, min_range, range / 2, max_size, p_values);
 				}
-				else children[2] = NULL;
+				
 
 				//oct3
 				if (oct3.size() != 0) {
 					point o3 = point(o.get_x() - range / 2, o.get_y() + range / 2, o.get_z() + range / 2);
 					children[3] = new octree(o3, oct3, min_range, range / 2, max_size, p_values);
 				}
-				else children[3] = NULL;
+			
 
 				//oct4
 				if (oct4.size() != 0) {
 					point o4 = point(o.get_x() + range / 2, o.get_y() - range / 2, o.get_z() - range / 2);
 					children[4] = new octree(o4, oct4, min_range, range / 2, max_size, p_values);
 				}
-				else children[4] = NULL;
+
 
 				//oct5
 				if (oct5.size() != 0) {
 					point o5 = point(o.get_x() + range / 2, o.get_y() - range / 2, o.get_z() + range / 2);
 					children[5] = new octree(o5, oct5, min_range, range / 2, max_size, p_values);
 				}
-				else children[5] = NULL;
+
 				//oct6
 				if (oct6.size() != 0) {
 					point o6 = point(o.get_x() + range / 2, o.get_y() + range / 2, o.get_z() - range / 2);
 					children[6] = new octree(o6, oct6, min_range, range / 2, max_size, p_values);
 				}
-				else children[6] = NULL;
+
 
 				//oct7
 				if (oct7.size() != 0) {
 					point o7 = point(o.get_x() + range / 2, o.get_y() + range / 2, o.get_z() + range / 2);
 					children[7] = new octree(o7, oct7, min_range, range / 2, max_size, p_values);
 				}
-				else children[7] = NULL;
+	
 
 				points = final;
 
 			}
 		}
-		else
-			for (int i = 0; i < 8; i++) children[i] = NULL;
 	}
 
 
 	bool octree::isLeaf() {
-		return children[0] == NULL;
+		
+		return (children[0] == NULL && children[1] == NULL && children[2] == NULL && children[3] == NULL && children[4] == NULL && children[5] == NULL && children[6] == NULL && children[7] == NULL);
 	}
 
 	//tribute to brandonpelfrey
@@ -313,38 +291,60 @@ double segment::get_length(std::vector<point> &points) const{
 						}
 						else final.push_back(*it);
 					}
-					//oct0
-					point o0 = point(o.get_x() - range / 2, o.get_y() - range / 2, o.get_z() - range / 2);
-					children[0] = new octree(o0, oct0, min_range, range / 2, max_size, p_values);
 
-					//oct1
+				//oct0
+				if (oct0.size() != 0) {
+					point o0 = point(o.get_x() - range / 2, o.get_y() - range / 2, o.get_z() + range / 2);
+					children[0] = new octree(o0, oct1, min_range, range / 2, max_size, p_values);
+				}
+
+				//oct1
+				if (oct1.size() != 0) {
 					point o1 = point(o.get_x() - range / 2, o.get_y() - range / 2, o.get_z() + range / 2);
 					children[1] = new octree(o1, oct1, min_range, range / 2, max_size, p_values);
+				}
+				
 
-					//oct2
+				//oct2
+				if (oct2.size() != 0) {
 					point o2 = point(o.get_x() - range / 2, o.get_y() + range / 2, o.get_z() - range / 2);
 					children[2] = new octree(o2, oct2, min_range, range / 2, max_size, p_values);
+				}
+				
 
-					//oct3
+				//oct3
+				if (oct3.size() != 0) {
 					point o3 = point(o.get_x() - range / 2, o.get_y() + range / 2, o.get_z() + range / 2);
 					children[3] = new octree(o3, oct3, min_range, range / 2, max_size, p_values);
+				}
+			
 
-					//oct4
+				//oct4
+				if (oct4.size() != 0) {
 					point o4 = point(o.get_x() + range / 2, o.get_y() - range / 2, o.get_z() - range / 2);
 					children[4] = new octree(o4, oct4, min_range, range / 2, max_size, p_values);
+				}
 
-					//oct5
+
+				//oct5
+				if (oct5.size() != 0) {
 					point o5 = point(o.get_x() + range / 2, o.get_y() - range / 2, o.get_z() + range / 2);
 					children[5] = new octree(o5, oct5, min_range, range / 2, max_size, p_values);
+				}
 
-					//oct6
+				//oct6
+				if (oct6.size() != 0) {
 					point o6 = point(o.get_x() + range / 2, o.get_y() + range / 2, o.get_z() - range / 2);
 					children[6] = new octree(o6, oct6, min_range, range / 2, max_size, p_values);
+				}
 
-					//oct7
+
+				//oct7
+				if (oct7.size() != 0) {
 					point o7 = point(o.get_x() + range / 2, o.get_y() + range / 2, o.get_z() + range / 2);
 					children[7] = new octree(o7, oct7, min_range, range / 2, max_size, p_values);
-					
+				}
+
 					points = final;
 				}
 			}

@@ -55,7 +55,8 @@ public:
 class octree {
 	private:
 		std::vector<int> points; //points belonging to this node
-		octree *children[8]; //array of children
+		std::vector<octree*> children = std::vector<octree*>(8);
+
 		double min_range; //minimal size of enclosed region (stop splitting the space)
 		int max_size; //maximal number of points on node before we stop splitting the space
 		point origo;
@@ -64,8 +65,6 @@ class octree {
 		octree();
 		octree(const octree &other);
 		octree(const point o, std::vector<int> p, double m_range , double r, int m_size, std::vector<point>& p_values);
-		~octree();
-//		virtual ~octree();
 		void insert_point(const int p, std::vector<point>& p_values);
 		int getContainerChild(const int p, std::vector<point>& p_values);
 		bool isLeaf();

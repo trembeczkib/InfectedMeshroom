@@ -29,10 +29,10 @@ int main() {
 	s.push_back(segment(2, 0));
 
 	front f = front(s);
-	mesh Mesh = mesh(Points, f, 16, 256, 4);
+	mesh Mesh = mesh(Points, f, 16, 256, 2);
 	
 //	Mesh.initilaizeOctree(16, 256, 2);
-//	std::cout << Mesh.get_octree().get_size();
+	std::cout << Mesh.get_octree().get_size();
 
 	getchar();
 	return 0;
