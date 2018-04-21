@@ -30,24 +30,24 @@ class segment {
 		void set_initial(int new_initial);
 		int get_initial() const;
 		int get_terminal() const;
-		double get_length(std::vector<point> points) const;
+		double get_length(std::vector<point> &points) const;
 		friend std::ostream& operator << (std::ostream& os, const segment& p);
-		friend bool length_sort(const segment s1, const segment s2, std::vector<point> points);
+//		friend bool length_sort(const segment s1, const segment s2, std::vector<point> points);
 };
 
+
 class triangle {
-	private:
-		point& a, b, c;
-	public:
-		triangle();
-		triangle(point& p1, point& p2, point& p3);
-		void set_a(point& p);
-		void set_b(point& p);
-		void set_c(point& p);
-		point& get_a();
-		point& get_b();
-		point& get_c();
-		friend std::ostream& operator << (std::ostream& os, const triangle& t);
+private:
+	int a, b, c;
+public:
+	triangle(int p1, int p2, int p3);
+	void set_a(int p);
+	void set_b(int p);
+	void set_c(int p);
+	int get_a();
+	int get_b();
+	int get_c();
+	friend std::ostream& operator << (std::ostream& os, const triangle& t);
 
 
 };
@@ -62,12 +62,16 @@ class octree {
 		double range;
 	public:
 		octree();
-		~octree();
+		octree(const octree &other);
 		octree(const point o, std::vector<int> p, double m_range , double r, int m_size, std::vector<point>& p_values);
+		~octree();
+//		virtual ~octree();
 		void insert_point(const int p, std::vector<point>& p_values);
 		int getContainerChild(const int p, std::vector<point>& p_values);
 		bool isLeaf();
+		int get_size();
 
 };
+
 
 #endif
