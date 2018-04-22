@@ -69,8 +69,12 @@ class octree {
 		octree(const point o, std::vector<int> p, double m_range , double r, int m_size, std::vector<point>& p_values);
 		void insert_point(const int p, std::vector<point>& p_values);
 		int getContainerChild(const int p, std::vector<point>& p_values);
+		int getContainerChild(const point pos);
+		std::vector<int> get_points();
+		std::vector<octree*> get_children();
 		bool isLeaf();
 		int get_size();
+//		std::vector<int> get_neighbours(const point p);
 
 };
 

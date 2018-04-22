@@ -253,6 +253,14 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 		return oct;
 	}
 
+	int octree::getContainerChild(const point pos) {
+		int oct = 0;
+		if (pos.get_x() >= origo.get_x()) oct |= 4;
+		if (pos.get_y() >= origo.get_y()) oct |= 2;
+		if (pos.get_z() >= origo.get_z()) oct |= 1;
+		return oct;
+	}
+
 	void octree::insert_point(const int p, std::vector<point>& p_values) {
 		if (isLeaf()) {
 			points.push_back(p);
@@ -367,3 +375,20 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 	int octree::get_size() {
 		return this->points.size();
 	}
+
+	std::vector<int> octree::get_points() {
+		return points;
+	}
+
+	std::vector<octree*> octree::get_children() {
+		return children;
+	}
+
+	//std::vector<int> octree::get_neighbours(const point p) {
+	//	octree* node = this;
+	//	while (!node->isLeaf()) {
+	//		node = node->get_children()[node->getContainerChild(p)];
+	//	}
+	//	std::vector<int> neighbours = node->get_points();
+	//	return neighbours;
+	//}
