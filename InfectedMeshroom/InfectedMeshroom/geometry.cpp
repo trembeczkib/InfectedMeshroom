@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "geometry.h"
+#include "mesh.h"
 
 std::ostream& operator << (std::ostream& os, const point& p) {
 	os << "P(" << p.get_x() << "," << p.get_y() << "," << p.get_z() << ")";
@@ -56,7 +57,6 @@ double point::get_z() const {
 
 //////////////////////////////////////////////////////////
 
-
 segment::segment() {
 	initial_point = 0;
 	terminal_point = 0;
@@ -96,13 +96,8 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 	return atan2((points[terminal_point].get_y() - points[initial_point].get_y()) , (points[terminal_point].get_x() - points[initial_point].get_x()));
 }
 
-///////////////////
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////
-
 
 
 	octree::octree() {
@@ -113,9 +108,6 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 		origo = point();
 	}
 	
-	
-
-
 	octree::octree(const octree &other) {
 		points = other.points;
 		min_range = other.min_range;
@@ -384,11 +376,11 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 		return children;
 	}
 
-	//std::vector<int> octree::get_neighbours(const point p) {
-	//	octree* node = this;
-	//	while (!node->isLeaf()) {
-	//		node = node->get_children()[node->getContainerChild(p)];
-	//	}
-	//	std::vector<int> neighbours = node->get_points();
-	//	return neighbours;
-	//}
+	std::vector<int> octree::get_neighbours(const point p) {
+		octree* node = this;
+		while (!node->isLeaf()) {
+			node = node->get_children()[node->getContainerChild(p)];
+		}
+		std::vector<int> neighbours = node->get_points();
+		return neighbours;
+	}

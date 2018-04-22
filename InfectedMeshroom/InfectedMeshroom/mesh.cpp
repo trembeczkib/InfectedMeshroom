@@ -68,8 +68,9 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 void mesh::advanceFront(double segment_length, double epsilon) {
 	while (get_front().get_edges().size() > 0) {
 		
-		int shortest_pos = get_shortestSegment();
-		point ideal = get_front().findIdealPoint(shortest_pos);
+		const int shortest_pos = get_shortestSegment();
+
+		point ideal = get_idealPoint_2d(shortest_pos);
 		std::vector<int> nearby_points;
 
 
@@ -204,7 +205,7 @@ void mesh::advanceFront(double segment_length, double epsilon) {
 			point terminal = p[it->get_terminal()];
 
 			if (((initial.get_y() > p0.get_y()) != (terminal.get_y() > p0.get_y())) && 
-				(p0.get_x() < (terminal.get_x() - initial.get_x() * (p0.get_y() - initial.get_y()) / (terminal.get_y() - initial.get_y()) + initial.get_x()) ));
+				(p0.get_x() < (terminal.get_x() - initial.get_x() * (p0.get_y() - initial.get_y()) / (terminal.get_y() - initial.get_y()) + initial.get_x()) ))
 			c = !c;
 
 		}

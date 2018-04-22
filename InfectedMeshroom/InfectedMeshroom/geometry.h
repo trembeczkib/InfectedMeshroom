@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 
+
 class point {
 	private:
 		double x, y, z;
@@ -74,7 +75,7 @@ class octree {
 		std::vector<octree*> get_children();
 		bool isLeaf();
 		int get_size();
-//		std::vector<int> get_neighbours(const point p);
+		std::vector<int> get_neighbours(const point p);
 
 };
 

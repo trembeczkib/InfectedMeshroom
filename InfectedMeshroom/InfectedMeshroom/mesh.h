@@ -16,7 +16,6 @@ class front {
 		void push_edge(segment new_edge);
 		void divide_edge(double length, int pos);		
 		bool isInsideFront(const point &p);
-		point findIdealPoint(const int pos);
 		std::vector<segment> get_edges();
 		friend std::ostream& operator << (std::ostream & os, const front & f);
 };

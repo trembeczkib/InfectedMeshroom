@@ -54,10 +54,10 @@ int main() {
 	point test4 = point(30, 21, 3);
 	point test5 = point(-40, -15, 3);
 
-//	int	inside0 = Mesh.nw_wn_pointInsideFront(test5);
-//	bool inside1 = Mesh.nw_angle_pointInsideFront(test5);
-//	bool inside2 = Mesh.last_resort_pointInsideFront(test5);
-	bool inside3 = Mesh.cn_PnPoly_2d(point(14,-14,3));
+	int	inside0 = Mesh.nw_wn_pointInsideFront(test5);
+	bool inside1 = Mesh.nw_angle_pointInsideFront(test5);
+	bool inside2 = Mesh.last_resort_pointInsideFront(test5);
+	bool inside3 = Mesh.cn_PnPoly_2d(point(test5));
 
 
 
