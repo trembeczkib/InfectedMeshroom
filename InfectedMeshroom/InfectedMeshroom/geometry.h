@@ -19,6 +19,7 @@ class point {
 		double get_x() const;
 		double get_y() const;
 		double get_z() const;
+		double get_distance(point other);
 		friend std::ostream& operator << (std::ostream& os, const point& p);
 };
 
@@ -75,7 +76,7 @@ class octree {
 		std::vector<octree*> get_children();
 		bool isLeaf();
 		int get_size();
-		std::vector<int> get_neighbours(const point p);
+
 
 };
 

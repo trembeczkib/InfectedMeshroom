@@ -228,3 +228,53 @@ void mesh::advanceFront(double segment_length, double epsilon) {
 		return (cn & 1);
 	}
 
+
+	std::vector<int> mesh::nearby_points_nearby(const point p0, double epsilon) {
+		std::vector<int> result;
+		int depth = 0;
+		octree node = p_octree;
+		while (!node.isLeaf()) {
+			node = *node.get_children()[node.getContainerChild(p0)];
+			++depth;
+		}
+		node = p_octree;
+		for (int i = 0; i < depth-1; ++i) {
+			node = *node.get_children()[node.getContainerChild(p0)];
+		}
+		std::vector<int> p_copy = node.get_points();
+		for (auto it = p_copy.begin(); it != p_copy.end(); ++it) {
+			double dist = sqrt(pow(p0.get_x() - p[*it].get_x(), 2) + pow(p0.get_y() - p[*it].get_y(), 2) + pow(p0.get_z() - p[*it].get_z(), 2));
+
+			if (dist <= epsilon)
+				result.push_back(*it);
+		}
+		for (int i = 0; i < 7; ++i) {
+			if (node.get_children()[i] != NULL) {
+				p_copy = node.get_children()[i]->get_points();
+				for (auto it = p_copy.begin(); it != p_copy.end(); ++it) {
+					double dist = sqrt(pow(p0.get_x() - p[*it].get_x(), 2) + pow(p0.get_y() - p[*it].get_y(), 2) + pow(p0.get_z() - p[*it].get_z(), 2));
+
+					if (dist <= epsilon)
+						result.push_back(*it);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	std::vector<int> mesh::nearby_points_leaf(const point p0, double epsilon) {
+			octree node = p_octree;
+			std::vector<int> result;
+			while (!node.isLeaf()) {
+				node = *node.get_children()[node.getContainerChild(p0)];
+			}
+			std::vector<int> p_copy = node.get_points();
+			for (auto it = p_copy.begin(); it != p_copy.end(); ++it) {
+				double dist = sqrt(pow(p0.get_x() - p[*it].get_x(), 2) + pow(p0.get_y() - p[*it].get_y(), 2) + pow(p0.get_z() - p[*it].get_z(), 2));
+
+				if (dist <= epsilon)
+					result.push_back(*it);
+			}
+			return result;
+	}

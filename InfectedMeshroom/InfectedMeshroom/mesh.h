@@ -46,7 +46,8 @@ class mesh {
 		bool last_resort_pointInsideFront(point p);
 		int isLeft_2d(point lp1, point lp2, point p0); 
 		int cn_PnPoly_2d(point p0);
-
+		std::vector<int> nearby_points_nearby(const point p0, double epsilon);
+		std::vector<int> nearby_points_leaf(const point p0, double epsilon);
 };
 
 

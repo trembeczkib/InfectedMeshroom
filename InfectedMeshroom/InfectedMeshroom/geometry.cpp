@@ -55,6 +55,10 @@ double point::get_z() const {
 	return z;
 }
 
+double point::get_distance(point other) {
+	return sqrt(pow(other.get_x() - get_x(), 2) + pow(other.get_y() - get_y(), 2) + pow(other.get_z() - get_z(), 2));
+}
+
 //////////////////////////////////////////////////////////
 
 segment::segment() {
@@ -376,11 +380,5 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 		return children;
 	}
 
-	std::vector<int> octree::get_neighbours(const point p) {
-		octree* node = this;
-		while (!node->isLeaf()) {
-			node = node->get_children()[node->getContainerChild(p)];
-		}
-		std::vector<int> neighbours = node->get_points();
-		return neighbours;
-	}
+
+

@@ -20,10 +20,14 @@ int main() {
 	//Points.push_back(point(-15, -8.660254038, 3));
 	//Points.push_back(point(+15, -8.660254038, 3));
 	//Points.push_back(point(0, 17.32050808, 3));
-	Points.push_back(point(-15, -15, 3));
-	Points.push_back(point(15, -15, 3));
-	Points.push_back(point(15, 15, 3));
-	Points.push_back(point(-15, +15, 3));
+	//Points.push_back(point(128, 128, 3));
+	//Points.push_back(point(127, 129, 3));
+	//Points.push_back(point(127, 127, 3));
+	//Points.push_back(point(129, 127, 3));
+	//Points.push_back(point(129, 127, 3));
+	//Points.push_back(point(130, 127, 3));
+	//Points.push_back(point(130, 130, 3));
+
 
 	//init test objects
 	std::vector<segment> s;
@@ -39,7 +43,7 @@ int main() {
 
 
 	front f = front(s);
-	mesh Mesh = mesh(Points, f, 16, 256, 2);
+	mesh Mesh = mesh(Points, f, 16, 256, 4);
 	
 //	Mesh.initilaizeOctree(16, 256, 2);
 //	std::cout << atan2(-10, 10) * 180 / M_PI;
@@ -59,6 +63,8 @@ int main() {
 	bool inside2 = Mesh.last_resort_pointInsideFront(test5);
 	bool inside3 = Mesh.cn_PnPoly_2d(point(test5));
 
+	//std::vector<int> neighbours1 = Mesh.nearby_points_leaf(point(129, 129, 3), 10);
+	//std::vector<int> neighbours2 = Mesh.nearby_points_nearby(point(129, 129, 3), 10);
 
 
 	std::getchar();
