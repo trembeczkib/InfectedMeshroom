@@ -17,6 +17,8 @@ class front {
 		void divide_edge(double length, int pos);		
 		bool isInsideFront(const point &p);
 		std::vector<segment> get_edges();
+		void set_edges(std::vector<segment> e);
+		void add_segment(segment s);
 		friend std::ostream& operator << (std::ostream & os, const front & f);
 };
 
@@ -35,7 +37,7 @@ class mesh {
 		std::vector<triangle>&  get_triangles();
 		std::vector<point>& get_points();
 		void sortFrontByLength();
-		void advanceFront(double segment_length, double epsilon);
+		void advanceFront(double close_distance, double far_distance);
 		bool length_sort(segment s1, segment s2);
 		void initilaizeOctree(double m_r, double r, double m_s);
 		void splitSegmentsInFront(double length, double min);
@@ -46,6 +48,12 @@ class mesh {
 		bool last_resort_pointInsideFront(point p);
 		int isLeft_2d(point lp1, point lp2, point p0); 
 		int cn_PnPoly_2d(point p0);
+		bool tryTriangle(segment s, int p_pos);
+		bool isIntersectingFront(segment s);
+		bool isIntersectingFront(segment s, segment shortest);
+		bool isInFront(segment s);
+		void removeFromFront(segment s);
+		void draw(sf::Color c_triangle, sf::Color c_triangle_edge, sf::Color c_front, sf::Color c_active, sf::Color c_point, int boundary, sf::RenderWindow& w);
 		std::vector<int> nearby_points_nearby(const point p0, double epsilon);
 		std::vector<int> nearby_points_leaf(const point p0, double epsilon);
 };
