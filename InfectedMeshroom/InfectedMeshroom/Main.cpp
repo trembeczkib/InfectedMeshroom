@@ -27,7 +27,6 @@ void zoomViewAt(sf::Vector2i pixel, sf::RenderWindow& window, float zoom)
 
 
 int main() {
-
 	int boundary = 1024;
 	sf::RenderWindow window(sf::VideoMode(boundary, boundary), "Boundary box");
 	const float zoomAmount{ 1.1f };
@@ -44,30 +43,41 @@ int main() {
 
 	std::vector<segment> Segments;
 	std::vector<point> Points;
-	Points.push_back(point(2*-15, 2*-8.660254038, 3));
-	Points.push_back(point(2*+15, 2*-8.660254038, 3));
-	Points.push_back(point(0, 2*17.32050808, 3));
+
+	int multiplier = 1;
+	Points.push_back(point(multiplier *-15, multiplier *-8.660254038, 3));
+	Points.push_back(point(multiplier *+15, multiplier *-8.660254038, 3));
+	Points.push_back(point(0, multiplier*17.32050808, 3));
+
+	//Points.push_back(point(multiplier *-15, multiplier *-15, 3));
+	//Points.push_back(point(multiplier *+15, multiplier *-15, 3));
+	//Points.push_back(point(multiplier *+15, multiplier *+15, 3));
+	//Points.push_back(point(multiplier *-15, multiplier *+15, 3));
+	
+
 	Segments.push_back(segment(0, 1));
 	Segments.push_back(segment(1, 2));
 	Segments.push_back(segment(2, 0));
 
 
+	//Points.push_back(point(-4, -4, 3));
+	//Points.push_back(point(4, -4, 3));
+	//Points.push_back(point(4, +4, 3));
+	//Points.push_back(point(-4, +4, 3));
 
-	//Points.push_back(point(-10, -10, 3));
-	//Points.push_back(point(+10, -10, 3));
-	//Points.push_back(point(+10, +10, 3));
-	//Points.push_back(point(-10, +10, 3));
 
-
-	//Segments.push_back(segment(0, 1));
-	//Segments.push_back(segment(1, 2));
-	//Segments.push_back(segment(2, 3));
-	//Segments.push_back(segment(3, 0));
+	//Segments.push_back(segment(4, 3));
+	//Segments.push_back(segment(5, 4));
+	//Segments.push_back(segment(6, 5));
+	//Segments.push_back(segment(3, 6));
 
 	front Front = front(Segments);
 	mesh Mesh = mesh(Points, Front, boundary / 4, boundary / 2, 8);
-	Mesh.splitSegmentsInFront(10, 1.5);
-	Mesh.advanceFront(1, 20);
+	double length = 5;
+	Mesh.splitSegmentsInFront(length, 1.5);
+
+
+	Mesh.advanceFront(2, length*2.5);
 
 	while (window.isOpen())
 	{
@@ -86,13 +96,6 @@ int main() {
 			}
 
 			window.clear(sf::Color::White);
-			//t.draw(sf::Color::Green, boundary, window, Points);
-			//Points[0].draw(sf::Color(128, 60, 162), boundary, window);
-			//Points[1].draw(sf::Color(128, 60, 162), boundary, window);
-			//Points[2].draw(sf::Color(128, 60, 162), boundary, window);
-			//Segments[0].draw(sf::Color::Blue, sf::Color(128, 60, 162), boundary, window, Points);
-			//Segments[1].draw(sf::Color::Blue, sf::Color(128, 60, 162), boundary, window, Points);
-			//Segments[2].draw(sf::Color::Blue, sf::Color(128, 60, 162), boundary, window, Points);
 			Mesh.draw(sf::Color(206, 229, 237), sf::Color::Green, sf::Color::Blue, sf::Color::Red, sf::Color(128, 60, 162), boundary, window);
 			window.draw(axis_x, 2, sf::Lines);
 			window.draw(axis_y, 2, sf::Lines);
@@ -102,6 +105,6 @@ int main() {
 
 
 	std::cout << "byeWorld!";
-//	std::getchar();
+	std::getchar();
 	return 0;
 }

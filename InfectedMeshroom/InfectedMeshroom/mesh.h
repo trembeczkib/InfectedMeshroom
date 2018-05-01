@@ -43,12 +43,7 @@ class mesh {
 		void splitSegmentsInFront(double length, double min);
 		int get_shortestSegment();
 		point get_idealPoint_2d(int segment_pos);
-		int nw_wn_pointInsideFront(point p);	//decode: not_working_winding_number
-		bool nw_angle_pointInsideFront(point p); //not_working_angles sum
-		bool last_resort_pointInsideFront(point p);
-		int isLeft_2d(point lp1, point lp2, point p0); 
-		int cn_PnPoly_2d(point p0);
-		bool tryTriangle(segment s, int p_pos);
+		bool tryTriangle(segment& s, int p_pos);
 		bool isIntersectingFront(segment s);
 		bool isIntersectingFront(segment s, segment shortest);
 		bool isInFront(segment s);
@@ -56,6 +51,15 @@ class mesh {
 		void draw(sf::Color c_triangle, sf::Color c_triangle_edge, sf::Color c_front, sf::Color c_active, sf::Color c_point, int boundary, sf::RenderWindow& w);
 		std::vector<int> nearby_points_nearby(const point p0, double epsilon);
 		std::vector<int> nearby_points_leaf(const point p0, double epsilon);
+		//pip
+		int isLeft_2d(point lp1, point lp2, point p0); 
+		bool nw_wn_pointInsideFront(point p);	//decode: not_working_winding_number
+		bool nw_angle_pointInsideFront(point p); //not_working_angles sum
+		bool last_resort_pointInsideFront(point p);
+		int pip4(point p0);
+		bool pip5(point p0);
+		bool pip6(point p0);
+		bool pip7(const point& p0);
 };
 
 

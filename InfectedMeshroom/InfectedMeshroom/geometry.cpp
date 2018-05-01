@@ -73,6 +73,11 @@ void point::draw(sf::Color c, int boundary, sf::RenderWindow& w) {
 
 //////////////////////////////////////////////////////////
 
+
+bool segment::isEqual(const segment& other) {
+	return (this->get_initial() == other.get_initial() && this->get_terminal() == other.get_terminal());
+}
+
 segment::segment() {
 	initial_point = 0;
 	terminal_point = 0;
@@ -113,7 +118,7 @@ double segment::get_angle_2d(std::vector<point> &points) const {
 }
 
 //https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-point segment::intersection(segment other, std::vector<point> points) {
+point segment::intersection(segment other, std::vector<point>& points) {
 	//"this" vector
 	segment this_segment = *this;
 	segment other_segment = other;
@@ -147,13 +152,13 @@ point segment::intersection(segment other, std::vector<point> points) {
 	return point(999999,999999,999999);
 }
 
-bool segment::isIntersected(segment other, std::vector<point> points) {
+bool segment::isIntersected(segment other, std::vector<point>& points) {
 	point intersection = this->intersection(other, points);
 	//if z == 3 would be enough
 	return !(intersection.get_x() == 999999 && intersection.get_y() == 999999 && intersection.get_z() == 999999);
 }
 
-bool segment::isIntersected(triangle t, std::vector<point> points) {
+bool segment::isIntersected(triangle t, std::vector<point>& points) {
 	segment c = segment(t.get_a(), t.get_b());
 	segment a = segment(t.get_b(), t.get_c());
 	segment b = segment(t.get_c(), t.get_a());
@@ -559,11 +564,14 @@ void segment::draw(sf::Color c_line, sf::Color c_point, int boundary, sf::Render
 			node = node->get_children()[node->getContainerChild(p_values[p])];
 			parent = node->get_parent();
 		}
-		int pos = 0;
-		for (int i = 0; i < node->points.size(); ++i) {
-			if (node->points[i] = p) pos = i;
+
+		for (auto it = node->points.begin(); it != node->points.end(); ++it) {
+			if (*it == p) {
+			node->points.erase(it);
+			break;
+			}
 		}
-		node->points.erase(node->points.begin() + pos);
+
 
 	}
 

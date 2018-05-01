@@ -130,39 +130,31 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 		return point(x,y,z);
 	}
 
-
-	// -:p0 is right of the line defined by lp1 and lp2
-	// 0:p0 is on the line
-	// +:p0 is left of the line
-	int mesh::isLeft_2d(point lp1, point lp2, point p0) {
-		return ((lp2.get_x() - lp1.get_x()) * (p0.get_y() - lp1.get_y()) - (p0.get_x() - lp1.get_x()) * (lp2.get_y() - lp1.get_y()));
+	int mesh::isLeft_2d(point p0, point p1, point p2) {
+		return ( (p1.get_x() - p0.get_x()) * (p2.get_y() - p0.get_y()) 
+				  - (p2.get_x() - p0.get_x()) * (p1.get_y() - p0.get_y()));
 	}
 
-
-
-	//winding-number algorithm, wn = 0 if p0 is ousside 
-	int mesh::nw_wn_pointInsideFront(point p0) {
+	bool mesh::nw_wn_pointInsideFront(point p0) {
 		int wn = 0;
 		const std::vector<segment> f_copy = f.get_edges();
 		int counter = 0;
 		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
 			counter++;
-			if (p[it->get_initial()].get_y() <= p0.get_y()) {
-				if (p[it->get_terminal()].get_y() > p0.get_y()) {
-					if (isLeft_2d(p[it->get_initial()], p[it->get_terminal()], p0) > 0)
-						++wn;
-				}
+			if (p[it->get_initial()].get_y() <= p0.get_y()) {          // start y <= p0.get_y()
+				if (p[it->get_terminal()].get_y()  > p0.get_y())      // an upward crossing
+					if (isLeft_2d(p[it->get_initial()], p[it->get_terminal()], p0) > 0)  // P left of  edge
+						++wn;            // have  a valid up intersect
 			}
-			else {
-				if (p[it->get_terminal()].get_y() <= p0.get_y()) {
-					if (isLeft_2d(p[it->get_initial()], p[it->get_terminal()], p0) > 0)
-						--wn;
-				}
+			else {                        // start y > p0.get_y() (no test needed)
+				if (p[it->get_terminal()].get_y() <= p0.get_y())     // a downward crossing
+					if (isLeft_2d(p[it->get_initial()], p[it->get_terminal()], p0) < 0)  // P right of  edge
+						--wn;            // have  a valid down intersect
 			}
-			std::cout << counter;
 		}
-		return wn;
+		return (!wn == 0);
 	}
+
 
 	bool mesh::nw_angle_pointInsideFront(point p0) {
 		const std::vector<segment> f_copy = f.get_edges();
@@ -183,27 +175,176 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 			return(1);
 	}
 
+	///http://alienryderflex.com/polygon/
+	bool mesh::pip5(point p0) {
+		bool  oddNodes = false;
+		float x = p0.get_x();
+		float y = p0.get_y();
+		int polyCorners = f.get_edges().size();
+		std::vector<segment> f_copy = f.get_edges();
+		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
+			float polyYj = p[it->get_terminal()].get_y();
+			float polyXj = p[it->get_terminal()].get_x();
+			float polyYi = p[it->get_initial()].get_y();
+			float polyXi = p[it->get_initial()].get_x();
+
+			if (polyYi<y && polyYj >= y
+				|| polyYj<y && polyYi >= y) {
+				if (polyXi + (y - polyYi) / (polyYj - polyYi)*(polyXj - polyXi)<x) {
+					oddNodes = !oddNodes;
+				}
+			}
+		}
+		return oddNodes;
+	}
+
+	bool mesh::pip6(point p0) {
+		double y = p0.get_y();
+		double x = p0.get_x();
+		int leftIntersection = 0;
+		int rightIntersection = 0;
+		std::vector<segment> f_copy = f.get_edges();
+		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
+			double initial_x = p[it->get_initial()].get_x();
+			double initial_y = p[it->get_initial()].get_y();
+			double terminal_x = p[it->get_terminal()].get_x();
+			double terminal_y = p[it->get_terminal()].get_y();
+			if ((initial_y < y && terminal_y >= y) || (initial_y >= y && terminal_y < y)) {
+
+			if (terminal_y - initial_y == 0) return false;
+				double x_intersection = ((terminal_x - initial_x) * (y - initial_y)) / (terminal_y - initial_y) + initial_x;
+				if (x_intersection < x) leftIntersection++;
+				else if (x_intersection > x) rightIntersection++;
+				else return false;
+			}
+		}	
+		if ((leftIntersection % 2) == 1 && (rightIntersection % 2) == 1)
+		{
+			return true;
+		}
+		return false;
+	}
 
 	bool mesh::last_resort_pointInsideFront(point p0) {
-		bool c = 0;
-		const std::vector<segment> f_copy = f.get_edges();
-		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
-			point initial = p[it->get_initial()];
-			point terminal = p[it->get_terminal()];
-			std::vector<segment> copy_front = f.get_edges();
-			for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
-				if (p[it->get_initial()] == p0 || p[it->get_terminal()] == p0) return true;
+		std::vector<segment> copy_front = f.get_edges();
+		for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
+			if ((p[it->get_initial()] == p0 || p[it->get_terminal()] == p0)) return true;
+		}
+		int i, j, c = 0;
+		std::vector<float> verty;
+		std::vector<float> vertx;
+		float testx = p0.get_x();
+		float testy = p0.get_y();
+		//front darabok keresése
+		std::vector<segment> front1;
+		std::vector<segment> front2;
+		std::vector<segment> copy_front1 = f.get_edges();
+		std::vector<segment> copy_front2 = f.get_edges();
+		std::vector<segment> copy_front3 = f.get_edges();
+		int c1 = 0;
+		int c2 = 0;
+		int c3 = 0;
+		bool talalt = false;
+		int elagazas;
+		int egyik;
+		int masik;
+		if (0) {
+			for (auto it1 = copy_front1.begin(); it1 != copy_front1.end(); ++it1) {
+				for (auto it2 = copy_front2.begin(); it2 != copy_front2.end(); ++it2) {
+					for (auto it3 = copy_front3.begin(); it3 != copy_front3.end(); ++it3) {
+						if ((it1->get_initial() == it2->get_terminal()) && (it1->get_initial() == it3->get_terminal()) && (it2->get_initial() != it3->get_initial())) {
+							elagazas = c1;
+							egyik = c2;
+							masik = c3;
+							talalt = true;
+							break;
+						}
+
+						c3++;
+					}
+					if (talalt) break;
+					c2++;
+					c3 = 0;
+				}
+				if (talalt) break;
+				c1++;
+				c2 = 0;
 			}
+			if (talalt) {
+				front1.push_back(copy_front2[egyik]);
+				front2.push_back(copy_front3[masik]);
+				int first = copy_front1[elagazas].get_initial();
+				int last1 = copy_front2[egyik].get_initial();
+				while (first != last1) {
+					for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
+						if (it->get_terminal() == last1) {
+							front1.push_back(*it);
+							last1 = it->get_initial();
+							break;
+						}
+					}
+				}
+				int last2 = copy_front3[masik].get_initial();
+				int error = 0;
+				while (first != last2 || error > 200) {
+					for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
+						if (it->get_terminal() == last2) {
+							front2.push_back(*it);
+							last2 = it->get_initial();
+							break;
+						}
+					}
+					error++;
+				}
+				copy_front = front1;
+				vertx.push_back(0);
+				verty.push_back(0);
+				for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
+					vertx.push_back(p[it->get_initial()].get_x());
+					verty.push_back(p[it->get_initial()].get_y());
+				}
+				vertx.push_back(p[copy_front.begin()->get_initial()].get_x());
+				verty.push_back(p[copy_front.begin()->get_initial()].get_y());
 
-			if (((initial.get_y() > p0.get_y()) != (terminal.get_y() > p0.get_y())) && 
-				(p0.get_x() < (terminal.get_x() - initial.get_x() * (p0.get_y() - initial.get_y()) / (terminal.get_y() - initial.get_y()) + initial.get_x()) ))
-			c = !c;
-
+				copy_front = front2;
+				vertx.push_back(0);
+				verty.push_back(0);
+				for (auto it = copy_front.begin(); it != copy_front.end(); ++it) {
+					vertx.push_back(p[it->get_initial()].get_x());
+					verty.push_back(p[it->get_initial()].get_y());
+				}
+				vertx.push_back(p[copy_front.begin()->get_initial()].get_x());
+				verty.push_back(p[copy_front.begin()->get_initial()].get_y());
+				vertx.push_back(0);
+				verty.push_back(0);
+				int nvert = verty.size();
+				for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+					if (((verty[i] > testy) != (verty[j] > testy)) &&
+						(testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+						c = !c;
+				}
+				return c;
+			}
+		}
+		int nvert = f.get_edges().size();
+		std::vector<segment> f_copy = f.get_edges();
+		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
+			vertx.push_back(p[it->get_initial()].get_x());
+			verty.push_back(p[it->get_initial()].get_y());
+		}
+		for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+			if (((verty[i]>testy) != (verty[j]>testy)) &&
+				(testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+				c = !c;
 		}
 		return c;
 	}
 
-	int mesh::cn_PnPoly_2d(point p0) {
+
+
+
+
+	int mesh::pip4(point p0) {
 		const std::vector<segment> f_copy = f.get_edges();
 		int cn = 0;
 		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
@@ -225,6 +366,12 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 		octree* parent = NULL;
 		octree* node = &p_octree;
 		while (!node->isLeaf()) {
+			for (int i = 0; i < node->get_points().size(); ++i) {
+				double dist = sqrt(pow(p0.get_x() - p[node->get_points()[i]].get_x(), 2) + pow(p0.get_y() - p[node->get_points()[i]].get_y(), 2) + pow(p0.get_z() - p[node->get_points()[i]].get_z(), 2)) - 0.001;
+				if (dist < epsilon ) {
+					result.push_back(node->get_points()[i]);
+				}
+			}
 			node = node->get_children()[node->getContainerChild(p0)];
 			parent = node->get_parent();
 		}
@@ -316,9 +463,8 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 	bool mesh::isIntersectingFront(segment s, segment shortest) {
 		point p0 = p[s.get_initial()];
 		point p1 = p[s.get_terminal()];
-		//if the intersection is on the shortest segment's points then we like it
-		if (last_resort_pointInsideFront(p0) && (s.get_terminal() == shortest.get_initial() || s.get_terminal() == shortest.get_terminal())) return false;
-		if (last_resort_pointInsideFront(p1) && (s.get_initial() == shortest.get_initial() || s.get_initial() == shortest.get_terminal())) return false;
+		if (last_resort_pointInsideFront(p0) && ((s.get_terminal() == shortest.get_initial() || s.get_terminal() == shortest.get_terminal()))) return false;
+		if (last_resort_pointInsideFront(p1) && ((s.get_initial() == shortest.get_initial() || s.get_initial() == shortest.get_terminal()))) return false;
 
 		std::vector<int> nearby_points = nearby_points_nearby(p0, s.get_length(p) * 2);
 		std::vector<int> nearby_points_temp = nearby_points_nearby(p1, s.get_length(p) * 2);
@@ -352,7 +498,7 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 		return isit;
 	}
 
-	bool mesh::tryTriangle(segment s, int p_pos) {
+	bool mesh::tryTriangle(segment& s, int p_pos) {
 		segment s1 = segment(s.get_initial(),p_pos);
 		segment s2 = segment(p_pos, s.get_terminal());
 
@@ -360,15 +506,13 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 		bool masodik = isIntersectingFront(s1,s);
 		bool harmadik = isIntersectingFront(s2,s);
 		std::cout << "belul van:" << elso << "\n metszi s1 a frontot:" << masodik << "\n metszi s2 a frontot:" << harmadik << std::endl;
-		if ( !last_resort_pointInsideFront(p[p_pos]) ||  isIntersectingFront(s1,s) || isIntersectingFront(s2,s)) 	
-			
+		if ( !last_resort_pointInsideFront(p[p_pos]) || isIntersectingFront(s1,s) || isIntersectingFront(s2,s)) 
 			return false;
-//		if (!cn_PnPoly_2d(p[p_pos]) || isIntersectingFront(s1, s) || isIntersectingFront(s2, s)) return false;
 		if (isInFront(s1)) removeFromFront(s1);
 		else f.add_segment(s1);
 		if (isInFront(s2)) removeFromFront(s2);
 		else f.add_segment(s2);
-		removeFromFront(s);
+		if (isInFront(s)) removeFromFront(s);
 		t.push_back(triangle(s.get_initial(), s.get_terminal(), p_pos));
 		
 		return true;
@@ -377,48 +521,92 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 	void mesh::advanceFront(double close_distance, double far_distance) {
 		int infiniteloop = 0;
 		while (get_front().get_edges().size() > 0) {
-			if (infiniteloop > 100) break;
 			infiniteloop++;
-			if (get_front().get_edges().size() == 3) {
-				bool elsokozospont = f.get_edges().at(0).get_terminal() == f.get_edges().at(1).get_initial();
-				bool masodikkozospont = f.get_edges().at(1).get_terminal() == f.get_edges().at(2).get_initial();
-				bool harmadikkozospont = f.get_edges().at(2).get_terminal() == f.get_edges().at(0).get_initial();
-				if (elsokozospont && masodikkozospont && harmadikkozospont) {
-					tryTriangle(f.get_edges().at(0), f.get_edges().at(1).get_terminal());
-				}
-			}
-				if (get_front().get_edges().size() >= 3) {
-				bool elsokozospont = f.get_edges().at(0).get_terminal() == f.get_edges().at(2).get_initial();
-				bool masodikkozospont = f.get_edges().at(2).get_terminal() == f.get_edges().at(1).get_initial();
-				bool harmadikkozospont = f.get_edges().at(1).get_terminal() == f.get_edges().at(0).get_initial();
-				if (elsokozospont && masodikkozospont && harmadikkozospont) {
-					tryTriangle(f.get_edges().at(0), f.get_edges().at(2).get_terminal());
-					for (int i = 0; i < f.get_edges().size(); i++) { f.get_edges().pop_back(); }
-				}
-			}
-			
-			if (get_front().get_edges().size() == 0) break;
-			//try to find 3 long circles in front
-			std::vector<segment> front_copy1 = f.get_edges();
-			std::vector<segment> front_copy2 = f.get_edges();
-			std::vector<segment> front_copy3 = f.get_edges();
-			for (auto it1 = front_copy1.begin(); it1 != front_copy1.end(); ++it1) {
-				for (auto it2 = front_copy2.begin(); it2 != front_copy2.end(); ++it2) {
-					for (auto it3 = front_copy3.begin(); it3 != front_copy3.end(); ++it3) {
-						if (it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it1->get_initial()) {
-							tryTriangle(*it1, it2->get_terminal());
-							break;
+			//if (get_front().get_edges().size() >= 3 && 1) {
+
+			//				//try to find 3 long loop in front
+			//	std::vector<segment> front_copy1 = f.get_edges();
+			//	std::vector<segment> front_copy2 = f.get_edges();
+			//	std::vector<segment> front_copy3 = f.get_edges();
+			//	int loopcounter = 0;
+			//	for (auto it1 = front_copy1.begin(); it1 != front_copy1.end(); ++it1) {
+
+			//		for (auto it2 = front_copy2.begin(); it2 != front_copy2.end(); ++it2) {
+			//			for (auto it3 = front_copy3.begin(); it3 != front_copy3.end(); ++it3) {
+			//				if ((it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it1->get_initial()) && 
+			//					(!it1->isEqual(*it2) && !it1->isEqual(*it3) && !it2->isEqual(*it3))) {
+			//					if (isInFront(*it1)) removeFromFront(*it1);
+			//					if (isInFront(*it2)) removeFromFront(*it2);
+			//					if (isInFront(*it3)) removeFromFront(*it3);
+			//					t.push_back(triangle(it2->get_initial(), it2->get_terminal(), it3->get_terminal()));
+			//					break;
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
+
+			if (t.size() > 50) break;
+			//try to find 4 long loop in front
+			if (get_front().get_edges().size() >= 4 && 0) {
+				std::vector<segment> front_copy1 = f.get_edges();
+				std::vector<segment> front_copy2 = f.get_edges();
+				std::vector<segment> front_copy3 = f.get_edges();
+				std::vector<segment> front_copy4 = f.get_edges();
+				for (auto it1 = front_copy1.begin(); it1 != front_copy1.end(); ++it1) {
+
+					for (auto it2 = front_copy2.begin(); it2 != front_copy2.end(); ++it2) {
+						for (auto it3 = front_copy3.begin(); it3 != front_copy3.end(); ++it3) {
+							if ((it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it1->get_initial()) &&
+								(!it1->isEqual(*it2) && !it1->isEqual(*it3) && !it2->isEqual(*it3))) {
+								if (isInFront(*it1)) removeFromFront(*it1);
+								if (isInFront(*it2)) removeFromFront(*it2);
+								if (isInFront(*it3)) removeFromFront(*it3);
+								t.push_back(triangle(it2->get_initial(), it2->get_terminal(), it3->get_terminal()));
+								break;
+							}
+							for (auto it4 = front_copy3.begin(); it4 != front_copy3.end(); ++it4) {
+								if ((it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it4->get_initial()
+									&& it4->get_terminal() == it1->get_initial()) &&
+									((!it1->isEqual(*it2) || !it1->isEqual(*it3) || !it1->isEqual(*it4)) && (!it2->isEqual(*it3) || !it2->isEqual(*it4)) && (!it3->isEqual(*it4))))
+								{
+									segment temp1 = segment(it2->get_initial(), it3->get_terminal());
+									segment temp2 = segment(it3->get_initial(), it4->get_terminal());
+									double length1 = temp1.get_length(p);
+									double length2 = temp2.get_length(p);
+									if (length1 < length2) {
+										if (isInFront(*it1)) removeFromFront(*it1);
+										if (isInFront(*it2)) removeFromFront(*it2);
+										if (isInFront(*it3)) removeFromFront(*it3);
+										if (isInFront(*it4)) removeFromFront(*it4);
+										t.push_back(triangle(it2->get_initial(), it2->get_terminal(), it3->get_terminal()));
+										t.push_back(triangle(it4->get_initial(), it4->get_terminal(), it1->get_terminal()));
+									}
+									else {
+										if (isInFront(*it1)) removeFromFront(*it1);
+										if (isInFront(*it2)) removeFromFront(*it2);
+										if (isInFront(*it1)) removeFromFront(*it3);
+										if (isInFront(*it4)) removeFromFront(*it4);
+										t.push_back(triangle(it1->get_initial(), it1->get_terminal(), it1->get_terminal()));
+										t.push_back(triangle(it3->get_initial(), it3->get_terminal(), it4->get_terminal()));
+									}
+
+									break;
+								}
+							}
 						}
 					}
-					break;
 				}
-				break;
+		}
+			int shortest_pos;
+			if (f.get_edges().size() != 0) {
+				if(abs(f.get_edges()[get_shortestSegment()].get_length(p) - f.get_edges()[0].get_length(p)) < 0.001) shortest_pos = 0;
+				else shortest_pos = get_shortestSegment();
 			}
 
-			const int shortest_pos = get_shortestSegment();
+			else break;
 
 			point ideal = get_idealPoint_2d(shortest_pos);
-
 			int ideal_pos;
 			std::vector<int> nearby_points = nearby_points_nearby(ideal, close_distance);
 
@@ -444,6 +632,11 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 				if (new_element == true) nearby_points.push_back(*it0);
 			}
 			int counter = 0;
+			int tsize = t.size();
+			if (tsize == 38) {
+				tsize = tsize;
+		//		break;
+			}
 			while (counter < nearby_points.size()) {
 				if (tryTriangle((f.get_edges().at(shortest_pos)) , (nearby_points.at(counter)))) 
 					break;
@@ -455,7 +648,15 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 					p.pop_back(); //if we did not use the "new" ideal point 
 				}
 			}
+		if (infiniteloop > 19) {
+		//	break;
 			}
+		if (infiniteloop > 16) {
+			infiniteloop = infiniteloop;
+//			break;
+		}
+			}
+
 		}
 
 	void mesh::removeFromFront(segment s) {
@@ -492,4 +693,63 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 			f.get_edges()[i].draw(c_front, c_active, boundary, w, p);
 		}
 
+	}
+
+	bool mesh::pip7(const point& p0)
+	{
+		std::vector<segment> f_copy = f.get_edges();
+		std::vector<point> points_list;
+		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
+			points_list.push_back(p[it->get_initial()]);
+		}
+		
+		// The winding number counter.
+		int winding_number = 0;
+
+		// Loop through all edges of the polygon.
+		typedef std::vector<point>::size_type size_type;
+
+		size_type size = points_list.size();
+
+		for (size_type i = 0; i < size; ++i)             // Edge from point1 to points_list[i+1]
+		{
+			point point1(points_list[i]);
+			point point2;
+
+			// Wrap?
+			if (i == (size - 1))
+			{
+				point2 = points_list[0];
+			}
+			else
+			{
+				point2 = points_list[i + 1];
+			}
+
+			if (point1.get_y() <= p0.get_y())                                    // start y <= point.y
+			{
+				if (point2.get_y() > p0.get_y())                                 // An upward crossing
+				{
+						if (((point2.get_x() - point1.get_x()) * (p0.get_y() - point1.get_y()) -
+							(p0.get_x() - point1.get_x()) * (point2.get_y() - point1.get_y())) > 0)
+					{
+						++winding_number;                               // Have a valid up intersect
+					}
+				}
+			}
+			else
+			{
+				// start y > point.y (no test needed)
+				if (point2.get_y() <= p0.get_y())                                // A downward crossing
+				{
+					if (((point2.get_x() - point1.get_x()) * (p0.get_y() - point1.get_y()) -
+						(p0.get_x() - point1.get_x()) * (point2.get_y() - point1.get_y())) < 0)
+					{
+						--winding_number;                               // Have a valid down intersect
+					}
+				}
+			}
+		}
+
+		return (winding_number != 0);
 	}

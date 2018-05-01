@@ -54,11 +54,12 @@ class segment {
 		double get_length(std::vector<point> &points) const;
 		double get_angle_2d(std::vector<point> &points) const;
 		friend std::ostream& operator << (std::ostream& os, const segment& p);
-		point intersection(segment other, std::vector<point> points);
-		bool isIntersected(triangle t, std::vector<point> points);
-		bool isIntersected(segment other, std::vector<point> points);
+		point intersection(segment other, std::vector<point>& points);
+		bool isIntersected(triangle t, std::vector<point>& points);
+		bool isIntersected(segment other, std::vector<point>& points);
 		void draw(sf::Color c_line, sf::Color c_point, int boundary, sf::RenderWindow& w, std::vector<point>& p);
 //		friend bool length_sort(const segment s1, const segment s2, std::vector<point> points);
+		bool isEqual(const segment& other);
 };
 
 
