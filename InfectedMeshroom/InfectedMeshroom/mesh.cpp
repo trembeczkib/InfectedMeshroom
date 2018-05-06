@@ -3,6 +3,25 @@
 #include "mesh.h"
 #include <algorithm> 
 
+neighbour::neighbour(int pos, std::vector<segment>& front) {
+	point_pos = pos;
+	active_neighbours;
+	dir; //0:in 1:out
+	neigh;
+	for (auto it = front.begin(); it != front.end(); ++it) {
+		if (it->get_initial() == point_pos) {
+			neigh.push_back(it->get_terminal());
+			dir.push_back(1);
+		}
+		if (it->get_terminal() == point_pos) {
+			neigh.push_back(it->get_initial());
+			dir.push_back(0);
+		}
+		active_neighbours = dir.size();
+	}
+}
+
+/////////////////////////////////
 
 front::front(std::vector<segment> front_vector) {
 	edges = front_vector;
@@ -40,6 +59,13 @@ mesh::mesh(std::vector<point> points, front front, double m_r, double r, double 
 	std::vector<int> pos;
 	for (int i = 0; i < p.size(); i++) pos.push_back(i);
 	p_octree = octree(point(0, 0, 0), pos, m_r, r, m_s, p, NULL);
+	int p_pos = 0;
+	for (auto it = p.begin(); it != p.end(); ++it)
+	{
+		neighbours.push_back(neighbour(p_pos,f.get_edges()));
+		p_pos++;
+	}
+
 }
 
 void mesh::set_front(front front) {
@@ -75,6 +101,8 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 	void mesh::splitSegmentsInFront(double length, double min) {
 		std::vector<segment> new_front;
 		const std::vector<segment> f_copy = f.get_edges();
+		int original_size = p.size();
+		int new_points = 0;
 		for (auto it = f_copy.begin(); it != f_copy.end(); ++it) {
 
 			if (it->get_length(p) > (length * min)) {
@@ -92,6 +120,7 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 					 y = y + sin(it->get_angle_2d(p)) * actual_length;
 					new_terminal = point(x,y,3);
 					p.push_back(new_terminal);
+					new_points++;
 					p_octree.insert_point(p.size() - 1, p);
 					new_terminal_pos = p.size() - 1;
 					new_front.push_back(segment(new_initial_pos,new_terminal_pos));
@@ -102,7 +131,9 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 			}
 			else new_front.push_back(*it);
 		}
-
+		for (int i = 0; i < new_points; i++) {
+			neighbours.push_back(neighbour(original_size + i, new_front));
+		}
 		f = new_front;
 	}
 
@@ -522,29 +553,29 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 		int infiniteloop = 0;
 		while (get_front().get_edges().size() > 0) {
 			infiniteloop++;
-			//if (get_front().get_edges().size() >= 3 && 1) {
+			if (get_front().get_edges().size() >= 3 && 1) {
 
-			//				//try to find 3 long loop in front
-			//	std::vector<segment> front_copy1 = f.get_edges();
-			//	std::vector<segment> front_copy2 = f.get_edges();
-			//	std::vector<segment> front_copy3 = f.get_edges();
-			//	int loopcounter = 0;
-			//	for (auto it1 = front_copy1.begin(); it1 != front_copy1.end(); ++it1) {
+							//try to find 3 long loop in front
+				std::vector<segment> front_copy1 = f.get_edges();
+				std::vector<segment> front_copy2 = f.get_edges();
+				std::vector<segment> front_copy3 = f.get_edges();
+				int loopcounter = 0;
+				for (auto it1 = front_copy1.begin(); it1 != front_copy1.end(); ++it1) {
 
-			//		for (auto it2 = front_copy2.begin(); it2 != front_copy2.end(); ++it2) {
-			//			for (auto it3 = front_copy3.begin(); it3 != front_copy3.end(); ++it3) {
-			//				if ((it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it1->get_initial()) && 
-			//					(!it1->isEqual(*it2) && !it1->isEqual(*it3) && !it2->isEqual(*it3))) {
-			//					if (isInFront(*it1)) removeFromFront(*it1);
-			//					if (isInFront(*it2)) removeFromFront(*it2);
-			//					if (isInFront(*it3)) removeFromFront(*it3);
-			//					t.push_back(triangle(it2->get_initial(), it2->get_terminal(), it3->get_terminal()));
-			//					break;
-			//				}
-			//			}
-			//		}
-			//	}
-			//}
+					for (auto it2 = front_copy2.begin(); it2 != front_copy2.end(); ++it2) {
+						for (auto it3 = front_copy3.begin(); it3 != front_copy3.end(); ++it3) {
+							if ((it1->get_terminal() == it2->get_initial() && it2->get_terminal() == it3->get_initial() && it3->get_terminal() == it1->get_initial()) && 
+								(!it1->isEqual(*it2) && !it1->isEqual(*it3) && !it2->isEqual(*it3))) {
+								if (isInFront(*it1)) removeFromFront(*it1);
+								if (isInFront(*it2)) removeFromFront(*it2);
+								if (isInFront(*it3)) removeFromFront(*it3);
+								t.push_back(triangle(it2->get_initial(), it2->get_terminal(), it3->get_terminal()));
+								break;
+							}
+						}
+					}
+				}
+			}
 
 			if (t.size() > 50) break;
 			//try to find 4 long loop in front
@@ -598,14 +629,19 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 					}
 				}
 		}
+			
+			//if (f.get_edges().size() != 0) {
+			//	if(abs(f.get_edges()[get_shortestSegment()].get_length(p) - f.get_edges()[0].get_length(p)) < 0.001) shortest_pos = 0;
+			//	else shortest_pos = get_shortestSegment();
+			//}
+				/*else break;*/
+
+			
+
+				
 			int shortest_pos;
-			if (f.get_edges().size() != 0) {
-				if(abs(f.get_edges()[get_shortestSegment()].get_length(p) - f.get_edges()[0].get_length(p)) < 0.001) shortest_pos = 0;
-				else shortest_pos = get_shortestSegment();
-			}
-
+			if (f.get_edges().size() != 0)	shortest_pos = get_shortestSegment();
 			else break;
-
 			point ideal = get_idealPoint_2d(shortest_pos);
 			int ideal_pos;
 			std::vector<int> nearby_points = nearby_points_nearby(ideal, close_distance);
@@ -633,9 +669,9 @@ void mesh::initilaizeOctree(double m_r, double r, double m_s) {
 			}
 			int counter = 0;
 			int tsize = t.size();
-			if (tsize == 38) {
+			if (tsize == 19) {
 				tsize = tsize;
-		//		break;
+	//			break;
 			}
 			while (counter < nearby_points.size()) {
 				if (tryTriangle((f.get_edges().at(shortest_pos)) , (nearby_points.at(counter)))) 

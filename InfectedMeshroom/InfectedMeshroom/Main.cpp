@@ -49,15 +49,17 @@ int main() {
 	Points.push_back(point(multiplier *+15, multiplier *-8.660254038, 3));
 	Points.push_back(point(0, multiplier*17.32050808, 3));
 
+
 	//Points.push_back(point(multiplier *-15, multiplier *-15, 3));
 	//Points.push_back(point(multiplier *+15, multiplier *-15, 3));
 	//Points.push_back(point(multiplier *+15, multiplier *+15, 3));
 	//Points.push_back(point(multiplier *-15, multiplier *+15, 3));
-	
+	//
 
 	Segments.push_back(segment(0, 1));
 	Segments.push_back(segment(1, 2));
 	Segments.push_back(segment(2, 0));
+
 
 
 	//Points.push_back(point(-4, -4, 3));
@@ -77,7 +79,7 @@ int main() {
 	Mesh.splitSegmentsInFront(length, 1.5);
 
 
-	Mesh.advanceFront(2, length*2.5);
+	Mesh.advanceFront(0.5,10);
 
 	while (window.isOpen())
 	{

@@ -5,6 +5,15 @@
 #include <vector>
 #include "geometry.h"
 
+class neighbour {
+	public:
+		int point_pos;
+		int active_neighbours;
+		std::vector<int> dir; //0:in 1:out
+		std::vector<int> neigh;
+		neighbour(int pos, std::vector<segment>& front);
+};
+
 class front {
 	private:
 		std::vector<segment> edges;
@@ -28,6 +37,7 @@ class mesh {
 		std::vector<triangle> t;
 		std::vector<point> p;
 		octree p_octree;
+		std::vector<neighbour> neighbours;
 	public:
 		mesh(std::vector<point> points, front f , double m_r, double r, double m_s);
 		void set_front(front front);
